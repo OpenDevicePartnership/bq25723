@@ -75,7 +75,6 @@ ignore = [
     #"a-crate-that-is-yanked@0.1.1", # you can also ignore yanked crate versions if you wish
     #{ crate = "a-crate-that-is-yanked@0.1.1", reason = "you can specify why you are ignoring the yanked crate" },
     { id = "RUSTSEC-2024-0370", reason = "proc-macro-error is unmaintained, no safe upgrade available, need upstream dependencies to migrate away from it." },
-    { id = "RUSTSEC-2024-0436", reason = "there are no suitable replacements for paste right now; paste has been archived as read-only. It only affects compile time concatenation in macros. We will allow it for now" },
 ]
 # If this is true, then cargo deny will use the git executable to fetch advisory database.
 # If this is false, then it uses a built-in git library.
@@ -93,8 +92,7 @@ ignore = [
 allow = [
     "MIT",
     "Apache-2.0",
-    "Unicode-3.0",
-    "BSD-3-Clause",
+    "Unicode-DFS-2016",
     #"Apache-2.0 WITH LLVM-exception",
 ]
 # The confidence threshold for detecting a license from license text.
@@ -108,6 +106,8 @@ exceptions = [
     # Each entry is the crate and version constraint, and its specific allow
     # list
     #{ allow = ["Zlib"], crate = "adler32" },
+    { allow = ["BSD-3-Clause"], crate = "encoding_rs" },
+    { allow = ["Unicode-3.0"], crate = "unicode-ident" },
 ]
 
 # Some crates don't have (easily) machine readable licensing information,

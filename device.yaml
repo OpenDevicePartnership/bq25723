@@ -1,0 +1,1169 @@
+config:
+  register_address_type: u8
+  default_byte_order: LE
+  default_bit_order: LSB0
+  defmt_feature: defmt-03
+
+CHARGE_OPTION_0_A:
+  type: register
+  address: 0x00
+  size_bits: 8
+  reset_value: 0x0E
+  fields:
+    CHRG_INHIBIT:
+      base: bool
+      start: 0
+      description:  Charge Inhibit. When bit is 0 battery charging will start with valid values in the CHARGE_VOLTAGE() and CHARGE_CURRENT().
+    EN_IIN_DPM:
+      base: bool
+      start: 1
+      description:  IIN_DPM Enable.
+                    Host writes this bit to enable IIN_DPM regulation loop.
+                    When the IIN_DPM is disabled
+                    by the charger (refer to IIN_DPM_AUTO_DISABLE),
+                    this bit goes LOW. Under OTG mode, this bit is also
+                    used to enable/disable IOTG regulation.
+    EN_LDO:
+      base: bool
+      start: 2
+      description:  LDO Mode Enable. 
+                    When battery voltage is below VSYS_MIN(), the
+                    charger is in pre-charge with LDO mode enabled.
+    IBAT_GAIN:
+      base: uint
+      start: 3
+      end: 4
+      conversion:
+        name: "IbatGain"
+        EightX: 0
+        SixtyFourX: 1
+      description:  IBAT Amplifier Ratio.
+                    The ratio of voltage on IBAT and voltage across SRP
+                    and SRN.
+    IADPT_GAIN:
+      base: uint
+      start: 4
+      end: 5
+      conversion:
+        name: "IadptGain"
+        TwentyX: 0
+        FortyX: 1
+      description:  IADPT Amplifier Ratio.
+                    The ratio of voltage on IADPT and voltage across ACP
+                    and ACN.
+    EN_LEARN:
+      base: bool
+      start: 5
+      description:  LEARN mode function enable.
+    VSYS_UVP_ENZ:
+      base: bool
+      start: 6
+      description:  Disable system under voltage protection.
+    EN_CMP_LATCH:
+      base: bool
+      start: 7
+      description:  Enable Latch of Independent Comparator. Comparator
+                    output with effective low. If enabled in PROCHOT
+                    profile PP_CMP=1b, STAT_COMP bit keep 1b after
+                    triggered until read by host and clear. host can clear
+                    CMPOUT pin by toggling this EN_CMP_LATCH bit.
+
+CHARGE_OPTION_0_B:
+  type: register
+  address: 0x01
+  size_bits: 8
+  reset_value: 0xE7
+  fields:
+    DIS_STRGRV:
+      base: bool
+      start: 0
+      description:  Switching HS MOSFET turn on gate drive strength.
+    PWM_FREQ:
+      base: uint
+      conversion:
+        name: "SwitchingFreq"
+        EightHundredkHz: 0
+        SixHundredkHz: 1
+      start: 1
+      end: 2
+      description:  Switching Frequency Selection.
+    EN_OOA:
+      base: bool
+      start: 2
+      description:  Out-of-Audio Enable.
+    OTG_ON_CHRGOK:
+      base: bool
+      start: 3
+      description:  Add OTG to CHRG_OK.
+    IIN_DPM_AUTO_DISABLE:
+      base: bool
+      start: 4
+      description:  IIN_DPM Auto Disable.
+    WDTMR_ADJ:
+      base: uint
+      conversion:
+        name: "MaxDelay"
+        Disable: 0
+        FiveSeconds: 1
+        EightyEightSeconds: 2
+        OneHundredSeventyFiveSeconds: 3
+      start: 5
+      end: 7
+      description:  WATCHDOG Timer Adjust.
+                    Set maximum delay between consecutive EC host
+                    write of charge voltage or charge current command.
+    EN_LWPWR:
+      base: bool
+      start: 7
+      description:  Low Power Mode enable.
+
+CHARGE_CURRENT:
+  type: register
+  address: 0x02
+  size_bits: 16
+  reset_value: 0x0000
+  fields:
+    CHARGE_CURRENT:
+      base: uint
+      start: 6
+      end: 13
+      description:  Charge current setting with 10mΩ sense resistor.
+
+CHARGE_VOLTAGE:
+  type: register
+  address: 0x04
+  size_bits: 16
+  reset_value: 0x0000
+  fields:
+    CHARGE_VOLTAGE:
+      base: uint
+      start: 3
+      end: 15
+      description:  Charge voltage setting.
+
+CHARGER_STATUS_0_A:
+  type: register
+  address: 0x20
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    FAULT_OTG_UVP:
+      base: bool
+      start: 0
+      access: RO
+      description:   The faults are latched until a read from host.
+    FAULT_OTG_OVP:
+      base: bool
+      start: 1
+      access: RO
+      description:   The faults are latched until a read from host.
+    FAULT_FORCE_CONVERTER_OFF:
+      base: bool
+      start: 2
+      access: RO
+      description:   The faults are latched until a read from host.
+    FAULT_VSYS_UVP:
+      base: bool
+      start: 3
+      access: RW
+      description:   VSYS_UVP fault status and clear. VSYS_UVP fault is latched until a
+                     clear from host by writing this bit to 0.
+    FAULT_SYSOVP:
+      base: bool
+      start: 4
+      access: RW
+      description:  SYSOVP Status and Clear
+                    When the SYSOVP occurs, this bit is HIGH. During the SYSOVP, the 
+                    converter is disabled.
+                    After the SYSOVP is removed, the user must write a 0 to this bit 
+                    or unplug the adapter to clear the SYSOVP condition to enable the 
+                    converter again.
+    FAULT_ACOC:
+      base: bool
+      start: 5
+      access: RO
+      description:  The faults are latched until a read from host.
+    FAULT_BATOC:
+      base: bool
+      start: 6
+      access: RO
+      description:  The faults are latched until a read from host.
+    FAULT_ACOV:
+      base: bool
+      start: 7
+      access: RO
+      description:  The faults are latched until a read from host.
+
+CHARGER_STATUS_0_B:
+  type: register
+  address: 0x21
+  size_bits: 8
+  reset_value: 0x00
+  access: RO
+  fields:
+    IN_OTG:
+      base: bool
+      start: 0
+      access: RO
+      description:   OTG?
+    IN_PCHRG:
+      base: bool
+      start: 1
+      access: RO
+      description:   Pre charge?
+    IN_FCHRG:  
+      base: bool
+      start: 2
+      access: RO
+      description:   Fast charge?
+    IN_IIN_DPM:
+      base: bool
+      start: 3
+      access: RW
+      description:  The fault is latched until a clear from host by writing this bit to 0.
+    IN_VIND_PM:
+      base: bool
+      start: 4
+      access: RW
+      description:  VINDPM during forward mode, or voltage regulation during OTG mode?
+    IN_VAP:
+      base: bool
+      start: 5
+      access: RO
+      description:  VAP Mode?
+    ICO_DONE:
+      base: bool
+      start: 6
+      access: RO
+      description:   After the ICO routine is successfully executed, the bit goes 1.
+    STAT_AC:
+      base: bool
+      start: 7
+      access: RO
+      description:    Input source status. STAT_AC is valid as long as VBUS go within
+                      3.5-V to 26-V range. It is different from CHRG_OK bit, When
+                      CHRG_OK is valid, STAT_AC must be valid, but if STAT_AC is valid,
+                      it is not necessary CHRG_OK is valid. There are Force converter
+                      off, ACOC, TSHUT , SYSOVP, VSYS_UVP, BATOVP can pull low
+                      CHRG_OK.
+
+PROCHOT_STATUS_REG_A:
+  type: register
+  address: 0x22
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    STAT_ADAPTER_REMOVAL:
+      base: bool
+      start: 0
+      access: RO
+      description:  Adapter removed?
+    STAT_BATTERY_REMOVAL:
+      base: bool
+      start: 1
+      access: RO
+      description:  Battery removed?
+    STAT_VSYS:
+      base: bool
+      start: 2
+      access: RO
+      description:  VSYS status triggered?
+    STAT_IDCHG1:
+      base: bool
+      start: 3
+      access: RO
+      description:  IDCHG1 status triggered?
+    STAT_INOM:
+      base: bool
+      start: 4
+      access: RO
+      description:  INOM status triggered?
+    STAT_ICRIT:
+      base: bool
+      start: 5
+      access: RO
+      description:  ICRIT status triggered?
+    STAT_COMP:
+      base: bool
+      start: 6
+      access: RO
+      description:  COMP status triggered?
+    STAT_VINDPM:
+      base: bool
+      start: 7
+      access: RW
+      description:  VINDPM status triggered?
+
+PROCHOT_STATUS_REG_B:
+  type: register
+  address: 0x23
+  size_bits: 8
+  reset_value: 0x38
+  fields:
+    STAT_EXIT_VAP:
+      base: bool
+      start: 0
+      access: RW
+      description:  PROCHOT_EXIT_VAP is active?
+    STAT_VAP_FAIL:
+      base: bool
+      start: 1
+      access: RW
+      description:  In VAP failure?
+    TSHUT:
+      base: bool
+      start: 2
+      access: RO
+      description:  TSHUT trigger
+    PROCHOT_CLEAR:
+      base: bool
+      start: 3
+      access: RW
+      description:  PROCHOT Pulse Clear.
+                    Clear PROCHOT pulse when
+                    EN_PROCHOT_EXT=0b.
+    PROCHOT_WIDTH:
+      base: uint
+      start: 4
+      end: 6
+      access: RW
+      conversion:
+        name: "ProchotPulseWidth"
+        OneHundredMicroseconds: 0
+        OneMillisecond: 1
+        FiveMilliseconds: 2
+        TenMilliseconds: 3
+      description:  PROCHOT Pulse Width when
+                    EN_PROCHOT_EXT = 0b.
+    EN_PROCHOT_EXT:
+      base: bool
+      start: 6
+      access: RW
+      description:  PROCHOT Pulse Extension Enable. When pulse
+                    extension is enabled, keep the PROCHOT pin voltage
+                    LOW until host writes PROCHOT_CLEAR= 0b.
+
+IIN_DPM:
+  type: register
+  address: 0x24
+  size_bits: 16
+  reset_value: 0x4100
+  fields:
+    IIN_DPM:
+      base: uint
+      start: 8
+      end: 15
+      description:  Actual input current limit with 10mΩ sense resistor.
+
+ADC_PSYS:
+  type: register
+  address: 0x26
+  size_bits: 8
+  reset_value: 0x0000
+  access: RO
+  fields:
+    ADC_PSYS:
+      base: uint
+      start: 0
+      end: 8
+      access: RO
+      description:   8-bit Digital Output of System Power
+
+ADC_VBUS:
+  type: register
+  address: 0x27
+  size_bits: 8
+  reset_value: 0x0000
+  access: RO
+  fields:
+    ADC_VBUS:
+      base: uint
+      start: 0
+      end: 8
+      access: RO
+      description:  8-bit Digital Output of Input Voltage
+
+ADC_IBAT_DCHRG:
+  type: register
+  address: 0x28
+  size_bits: 8
+  reset_value: 0x0000
+  access: RO
+  fields:
+    ADC_IBAT_DCHRG:
+      base: uint
+      start: 0
+      end: 7
+      access: RO
+      description:  7-bit Digital Output of Battery Charge Current
+
+ADC_IBAT_CHRG:
+  type: register
+  address: 0x29
+  size_bits: 8
+  reset_value: 0x0000
+  access: RO
+  fields:
+    ADC_IBAT_CHRG:
+      base: uint
+      start: 0
+      end: 7
+      access: RO
+      description:  7-bit Digital Output of Battery Discharge Current
+
+ADC_CMPIN:
+  type: register
+  address: 0x2A
+  size_bits: 8
+  access: RO
+  fields:
+    ADC_CMPIN:
+      base: uint
+      start: 0
+      end: 8
+      access: RO
+      description:  8-bit Digital Output of CMPIN voltage
+
+ADC_VBAT:
+  type: register
+  address: 0x2C
+  size_bits: 8
+  access: RO
+  fields:
+    ADC_VBAT:
+      base: uint
+      start: 0
+      end: 8
+      access: RO
+      description:  8-bit Digital Output of Battery Voltage
+
+ADC_VSYS:
+  type: register
+  address: 0x2D
+  size_bits: 8
+  access: RO
+  fields:
+    ADC_VSYS:
+      base: uint
+      start: 0
+      end: 8
+      access: RO
+      description:  8-bit Digital Output of System Voltage
+
+CHARGE_OPTION_1_A:
+  type: register
+  address: 0x30
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    AUTO_WAKEUP_EN:
+      base: bool
+      start: 0
+      description:   Auto Wakeup Enable
+                     When this bit is HIGH, if the battery is below minimum system voltage 
+                     (REG0x0D/0C()), the device will automatically enable 128 mA charging current 
+                     for 30 mins. When the battery is charged up above minimum system voltage, 
+                     charge will terminate and the bit is reset to LOW
+    EN_SHIP_DCHG:
+      base: bool
+      start: 1
+      description:  Discharge SRN for Shipping Mode.
+                    Used to discharge SRN pin capacitor voltage which
+                    is necessary for battery gauge device shipping mode.
+    EN_PTM:
+      base: bool
+      start: 2
+      description:  PTM enable register bit, it will automatically reset to zero.
+    FORCE_CONV_OFF:
+      base: bool
+      start: 3
+      description:   Force Converter Off function
+                     When independent comparator triggers, (CMPOUT pin pulled down) converter
+                     latches off, at the same time, CHRG_OK signal goes LOW to notify the system.
+                     Charge current is also set to zero internally, but charge current register setting
+                     keeps the same. To get out of converter latches off, firstly the CMPOUT should
+                     be released to high and secondly FORCE_CONV_OFF bit should be cleared
+                     (=0b).
+    CMP_DEG:
+      base: uint
+      start: 4
+      end: 6
+      conversion:
+        name: "ComparatorDeglitchTime"
+        Disabled: 0
+        OneMicroSecond: 1
+        TwoMilliseconds: 2
+        FiveSeconds: 3
+      description:  Independent comparator deglitch time, only applied to
+                    the falling edge of
+                    CMPOUT (HIGH to LOW).
+    CMP_POL:
+      base: bool
+      start: 6
+      description:  Independent Comparator output Polarity
+    CMP_REF:
+      base: bool
+      start: 7
+      description:  Independent Comparator Internal Reference.
+                    The datasheet indicates
+                    0 = 2.3V reference
+                    1 = 1.2V reference
+
+CHARGE_OPTION_1_B:
+  type: register
+  address: 0x31
+  size_bits: 8
+  reset_value: 0x33
+  fields:
+    EN_FAST_5MOHM:
+      base: bool
+      start: 0
+      description:   Enable fast compensation to increase bandwidth under 5 mΩ RAC
+                     (RSNS_RAC=1b) for input current up to 6.4-A application (the fast
+                     compensation will only work when IADPT pin is configured less than 160 kΩ
+    PSYS_RATIO:
+      base: uint
+      start: 1
+      end: 2
+      conversion:
+        name: "PsysGain"
+        ZeroPoint25uAperW: 0
+        OnePoint00uAperW: 1
+      description:  PSYS Gain.
+                    Ratio of PSYS output current vs total input and battery
+                    power.
+    RSNS_RSR:
+      base: uint
+      start: 2
+      end: 3
+      conversion:
+        name: "ChargeSenseResistorRsr"
+        TenMilliOhms: 0
+        TwentyMilliOhms: 1
+      description:  Charge sense resistor RSR. 
+    RSNS_RAC:
+      base: uint
+      start: 3
+      end: 4
+      conversion:
+        name: "InputSenseResistorRAC"
+        TenMilliOhms: 0
+        TwentyMilliOhms: 1
+      description:  Input sense resistor RAC. 
+    PSYS_CONFIG:
+      base: uint
+      start: 4
+      end: 6
+      conversion:
+        name: "PsysEnable"
+        PbusAndPbat: 0
+        Pbus: 1
+        Reserved: 2
+        Off: 3
+      description:  PSYS Enable and Definition Register
+                    Enable PSYS sensing circuit and output buffer (whole PSYS circuit). In low
+                    power mode (EN_LWPWR=1b), PSYS sensing and buffer are always disabled
+                    regardless of this bit value. 
+    EN_PROCHOT_LPWR:
+      base: bool
+      start: 6
+      description:  Enable PROCHOT during battery only low power mode
+                    With battery only, enable VSYS in PROCHOT with low power consumption. Do 
+                    not enable this function with adapter present.
+    EN_IBAT:
+      base: bool
+      start: 7
+      description:  IBAT Enable.
+                    In low power mode (EN_LWPWR=1b), IBAT
+                    buffer is always disabled regardless of this bit value.
+
+CHARGE_OPTION_2_A:
+  type: register
+  address: 0x32
+  size_bits: 8
+  reset_value: 0xB7
+  fields:
+    BATOC_VTH:
+      base: uint
+      start: 0
+      end: 1
+      conversion:
+        name: "BatocVth"
+        OneHunderedThirtyThreePercent: 0
+        TwoHundredPercent: 1
+      description:  Set battery discharge overcurrent threshold as
+                    percentage of PROCHOT battery discharge current limit.
+    EN_BATDOC:
+      base: bool
+      start: 1
+      description:  Battery discharge overcurrent (BATDOC) protection enable.
+    ACOC_VTH:
+      base: uint
+      start: 2
+      end: 3
+      conversion:
+        name: "AcocLimit"
+        OneHunderedThirtyThreePercent: 0
+        TwoHundredPercent: 1
+      description:  ACOC Limit.
+                    Set ACOC threshold as percentage of ILIM2_VTH with
+                    current sensed from RAC.
+    EN_ACOC:
+      base: bool
+      start: 3
+      description:  Input overcurrent (ACOC) protection enable.
+    ACX_OCP:
+      base: uint
+      start: 4
+      end: 5
+      conversion:
+        name: "ACX_OCP"
+        TwoHundredEightyMilliVolts: 0
+        OneHundredFiftyMillivolts: 1
+      description:   Input current OCP threshold by sensing ACP-ACN.
+    Q2_OCP:
+      base: uint
+      start: 5
+      end: 6
+      conversion:
+        name: "Q2_OCP"
+        TwoHundredTenMilliVolts: 0
+        OneHundredFiftyMillivolts: 1
+      description:  Q2 OCP threshold by sensing Q2 VDS
+    EN_ICHG_IDCHG:
+      base: uint
+      start: 6
+      end: 7
+      conversion:
+        name: "IBatPinSelect"
+        IBatPinAsDischarge: 0
+        IBatPinAsCharge: 1
+      description:  IBAT pin monitor selection for discharge current and
+                    charge current.
+    EN_EXTILIM:
+      base: bool
+      start: 7
+      description:  Enable ILIM_HIZ pin to set input current limit.
+
+CHARGE_OPTION_2_B:
+  type: register
+  address: 0x33
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    PKPWR_TMAX:
+      base: uint
+      start: 0
+      end: 2
+      conversion:
+        name: "PkpwrTmax"
+        TwentyMilliseconds: 0
+        FortyMilliseconds: 1
+        EightyMilliseconds: 2
+        OneSecond: 3
+      description:  Peak power mode overload and relax cycle time.
+    PKPWR_RELAX_STAT:
+      base: bool
+      start: 2
+      description:  Indicator that the device is in relaxation cycle
+    STAT_PKPWR_OVLD:
+      base: bool
+      start: 3
+      description:  Indicator that the device is in overloading cycle
+    EN_PKPWR_VSYS:
+      base: bool
+      start: 4
+      description:  Enable Peak Power Mode triggered by system
+                    voltage under-shoot.
+    EN_PKPWR_IIN_DPM:
+      base: bool
+      start: 5
+      description:  Enable Peak Power Mode triggered by input
+                    current overshoot.
+    PKPWR_TOVLD_DEG:
+      base: uint
+      start: 6
+      end: 8
+      conversion:
+        name: "PkpwrTovldDeg"
+        OneMillisecond: 0
+        TwoMilliseconds: 1
+        FiveMilliseconds: 2
+        TenMilliseconds: 3
+      description:  Input Overload time in Peak Power Mode.
+
+CHARGE_OPTION_3_A:
+  type: register
+  address: 0x34
+  size_bits: 8
+  reset_value: 0x34
+  fields:
+    PSYS_OTG_IDCHG:
+      base: uint
+      start: 0
+      end: 1
+      conversion:
+        name: "PsysOtg"
+        BattDischargePowerMinusOtg: 0
+        BattDischargePower: 1
+      description:  PSYS definition during OTG mode.
+    BATFETOFF_HIZ:
+      base: bool
+      start: 1
+      description:  BATFET off during HIZ mode?
+    CMP_EN:
+      base: bool
+      start: 2
+      description:  Enable Independent Comparator with effective low
+    IL_AVG:
+      base: uint
+      start: 3
+      end: 5
+      conversion:
+        name: "ILAvgClamp"
+        SixAmps: 0
+        TenAmps: 1
+        FifteenAmps: 2
+        Disabled: 3
+      description:  Inductor average current clamp.
+    OTG_VAP_MODE:
+      base: bool
+      start: 5
+      description:  The selection of the external OTG/VAP/FRS pin control. Don't
+                    recommend to change pin control after OTG/VAP/FRS pin is pulled high.
+    EN_VBUS_VAP:
+      base: bool
+      start: 6
+      description:   Enable the VBUS VAP for VAP operation mode 2&3
+    BATFET_ENZ:
+      base: bool
+      start: 7
+      description:    Turn off BATFET under battery only mode. If charger is not in battery only
+                      mode this bit is not allowed to be written to 1. Under battery only OTG
+                      mode, this bit is forced to be 0b.
+
+CHARGE_OPTION_3_B:
+  type: register
+  address: 0x35
+  size_bits: 8
+  reset_value: 0x05
+  fields:
+    EN_OTG_BIGCAP:
+      base: bool
+      start: 0
+      description:   Enable OTG compensation for VBUS effective capacitance larger than 33μF
+    EN_VSYS_MIN_SOFT_SR:
+      base: bool
+      start: 1
+      description:    Enable VSYS_MIN soft slew rate transition
+    EN_PORT_CTRL:
+      base: bool
+      start: 2
+      description:    Enable BATFET control
+    EN_ICO_MODE:
+      base: bool
+      start: 3
+      description:  Enable ICO Algorithm.
+    EN_OTG:
+      base: bool
+      start: 4
+      description:  OTG Mode Enable.
+                    Enable device in OTG mode when EN_OTG pin is
+                    HIGH.
+    RESET_VINDPM:
+      base: bool
+      start: 5
+      description:  Reset VINDPM Threshold
+    RESET_REG:
+      base: bool
+      start: 6
+      description:  Factory Reset Registers.
+    EN_HIZ:
+      base: bool
+      start: 7
+      description:  Device Hi-Z Mode Enable.
+                    When the charger is in Hi-Z mode, the device draws
+                    minimal quiescent current. With VBUS above UVLO.
+                    REGN LDO stays on, and system powers from battery.
+
+PROCHOT_OPTION_0_A:
+  type: register
+  address: 0x36
+  size_bits: 8
+  reset_value: 0x81
+  fields:
+    LOWER_PROCHOT_VINDPM:
+      base: bool
+      start: 0
+      description:  Enable lower threshold of PROCHOT_VINDPM
+                    comparator.
+    INOM_DEG:
+      base: uint
+      start: 1
+      end: 2
+      conversion:
+        name: "InomDeglitchTime"
+        Short: 0
+        Long: 1
+      description:  INOM deglitch time.
+    VSYS_TH1:
+      base: uint
+      start: 2
+      end: 8
+      description:  VSYS Threshold to trigger discharging VBUS in VAP mode.
+                    Measure on VSYS with fixed 5-µs deglitch time. Trigger when SYS pin voltage is
+                    below the thresholds. There is a fixed DC offset which is 3.2 V.
+                    2S - 4s battery (Default 6.4 V)
+
+PROCHOT_OPTION_0_B:
+  type: register
+  address: 0x37
+  size_bits: 8
+  reset_value: 0x4A
+  fields:
+    PROCHOT_VINDPM_80_90:
+      base: uint
+      start: 0
+      end: 1
+      conversion:
+        name: "Threshold"
+        EightyThreePercent: 0
+        NinetyOnePercent: 1
+      description:  Lower threshold of the PROCHOT_VINDPM
+                    comparator.
+                    When LOWER_PROCHOT_VINDPM=1, the threshold
+                    of PROCHOT_VINDPM is determined by this setting.
+    ICRIT_DEG:
+      base: uint
+      start: 1
+      end: 3
+      conversion:
+        name: "ICRITDeglitchTime"
+        FifteenMicroSeconds: 0
+        OneHundredMicroSeconds: 1
+        FourHundredMicroSeconds: 2
+        EightHundredMicroSeconds: 3
+      description:  ICRIT deglitch time to trigger PROCHOT.
+    ILIM2_VTH:
+      base: uint
+      start: 3
+      end: 8
+      description:  ILIM2 Threshold.
+
+PROCHOT_OPTION_1_A:
+  type: register
+  address: 0x38
+  size_bits: 8
+  reset_value: 0xA0
+  fields:
+    PP_ACOK:
+      base: bool
+      start: 0
+      description:  Adapter removal PROCHOT profile enable.
+    PP_BATPRES:
+      base: bool
+      start: 1
+      description:  Battery removal PROCHOT profile enable.
+    PP_VSYS:
+      base: bool
+      start: 2
+      description:  VSYS PROCHOT profile enable.
+    PP_IDCHG1:
+      base: bool
+      start: 3
+      description:  IDCHG1 PROCHOT profile enable.
+    PP_INOM:
+      base: bool
+      start: 4
+      description:  INOM PROCHOT profile enable.
+    PP_ICRIT:
+      base: bool
+      start: 5
+      description:  ICRIT PROCHOT profile enable. 
+    PP_COMP:
+      base: bool
+      start: 6
+      description:  COMP PROCHOT profile enable.
+    PP_VINDPM:
+      base: bool
+      start: 7
+      description:  VINDPM PROCHOT profile enable.
+
+PROCHOT_OPTION_1_B:
+  type: register
+  address: 0x39
+  size_bits: 8
+  reset_value: 0x41
+  fields:
+    IDCHG_DEG1:
+      base: uint
+      start: 0
+      end: 2
+      conversion:
+        name: "IdchgDeglitchTime"
+        SeventyEightMilliseconds: 0
+        OnePointTwoFiveSeconds: 1
+        FiveSeconds: 2
+        TwentySeconds: 3
+      description:  IDCHG deglitch time.
+    IDCHG_TH1:
+      base: uint
+      start: 2
+      end: 8
+      description:  IDCHG level 1 Threshold.
+
+ADC_OPTION_A:
+  type: register
+  address: 0x3A
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    EN_ADC_VBAT:
+      base: bool
+      start: 0
+      description:  Enable SRN pin Voltage ADC Channel.
+    EN_ADC_VSYS:
+      base: bool
+      start: 1
+      description:  Enable VSYS pin Voltage ADC Channel.
+    EN_ADC_ICHG:
+      base: bool
+      start: 2
+      description:  Enable ICHG ADC Channel.
+    EN_ADC_IDCHG:
+      base: bool
+      start: 3
+      description:  Enable IDCHG ADC Channel.
+    EN_ADC_IIN:
+      base: bool
+      start: 4
+      description:  Enable IIN ADC Channel.
+    EN_ADC_PSYS:
+      base: bool
+      start: 5
+      description:  Enable PSYS pin Voltage ADC Channel. 
+    EN_ADC_VBUS:
+      base: bool
+      start: 6
+      description:  Enable VBUS pin Voltage ADC Channel.
+    EN_ADC_CMPIN:
+      base: bool
+      start: 7
+      description:  Enable CMPIN_TR pin Voltage ADC Channel.
+
+ADC_OPTION_B:
+  type: register
+  address: 0x3B
+  size_bits: 8
+  reset_value: 0x20
+  fields:
+    ADC_FULL_SCALE:
+      base: bool
+      start: 5
+      description:   ADC input voltage range. When input voltage is below 5 V, or battery is 1S, 
+                     full scale 2.04 V is recommended.
+                     0b 2.04 V
+                     1b 3.06 V <default at POR>
+    ADC_START:
+      base: bool
+      start: 6
+      description:  ADC start control. After the one-shot update is complete, this bit 
+                    automatically resets to zero
+    ADC_CONV:
+      base: bool
+      start: 7 
+      description:  Typical ADC conversion time is 10 ms. 
+                    0b OneShot
+                    1b Continuous
+CHARGE_OPTION_4_A:
+  type: register
+  address: 0x3C
+  size_bits: 8
+  reset_value: 0x48
+  fields:
+    STAT_PTM:
+      base: bool
+      start: 0
+      description:  PTM operation status active.
+    STAT_IDCHG2:
+      base: bool
+      start: 1
+      description:  IDCHG2 status triggered.
+    PP_IDCHG2:
+      base: bool
+      start: 2
+      description:  Enable IDCHG_TH2 PROCHOT Profile.
+    IDCHG_TH2:
+      base: uint
+      start: 3
+      end: 6
+      description:  Battery discharge current limit2 based on percentage
+                    of IDCHG_TH1.
+    IDCHG_DEG2:
+      base: uint
+      start: 6
+      end: 8
+      conversion:
+        name: "IdchgDeglitchTime2"
+        VeryShort: 0
+        Short: 1
+        Long: 2
+        VeryLong: 3
+      description:  Battery discharge current limit 2 deglitch time.
+
+CHARGE_OPTION_4_B:
+  type: register
+  address: 0x3D
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    STAT_VBUS_VAP:
+      base: bool
+      start: 0
+      description: VBUS_VAP status triggered.
+    PP_VBUS_VAP:
+      base: bool
+      start: 1
+      description:  Enable VBUS_VAP PROCHOT Profile.
+    VSYS_UVP_NO_HICCUP:
+      base: bool
+      start: 2
+      description:  Disable VSYS_UVP Hiccup mode operation.
+    EN_DITHER:
+      base: uint
+      start: 3
+      end: 5
+      conversion:
+        name: "DitherConfig"
+        Disable: 0
+        OneX: 1
+        TwoX: 2
+        ThreeX: 3
+      description:  Frequency Dither configuration.
+    VSYS_UVP:
+      base: uint
+      start: 5
+      end: 8
+      description:  VSYS Under Voltage Lock Out. After UVP is triggered
+                    the charger enters
+                    hiccup mode, and then the charger is latched off if the
+                    restart fails 7 times
+                    in 90s.
+
+VMIN_ACTIVE_PROTECTION_A:
+  type: register
+  address: 0x3E
+  size_bits: 8
+  reset_value: 0x6C
+  fields:
+    EN_FRS:
+      base: bool
+      start: 0
+      description:  Fast Role Swap Feature Enable.
+    EN_VSYSTH2_FOLLOW_VSYSTH1:
+      base: bool
+      start: 1
+      description:  Enable internal VSYS_TH2 follow VSYS_TH1 setting
+                    neglecting register VSYS_TH2 setting.
+    VSYS_TH2:
+      base: uint
+      start: 2
+      end: 8
+      description:  VAP Mode2 VBUS /PROCHOT trigger voltage
+                    threshold.
+
+VMIN_ACTIVE_PROTECTION_B:
+  type: register
+  address: 0x3F
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    VBUS_VAP_TH:
+      base: uint
+      start: 1
+      end: 8
+      description:  VAP Mode2 VBUS /PROCHOT trigger voltage
+                    threshold.
+
+OTG_VOLTAGE:
+  type: register
+  address: 0x06
+  size_bits: 16
+  reset_value: 0xC409
+  fields:
+    INPUT_VOLTAGE:
+      base: uint
+      start: 2
+      end: 14
+      description:  OTG Output voltage limit
+
+OTG_CURRENT:
+  type: register
+  address: 0x08
+  size_bits: 16
+  reset_value: 0x003C
+  fields:
+    OTG_CURRENT:
+      base: uint
+      start: 8
+      end: 15
+      description:  OTG output current limit 
+
+INPUT_VOLTAGE:
+  type: register
+  address: 0x0A
+  size_bits: 16
+  fields:
+    INPUT_VOLTAGE:
+      base: uint
+      start: 6
+      end: 14
+      description:  Input Voltage Limit
+
+VSYS_MIN:
+  type: register
+  address: 0x0C
+  size_bits: 16
+  reset_value: 0x0000
+  fields:
+    CHARGE_VOLTAGE:
+      base: uint
+      start: 8
+      end: 16
+      description:  Charge voltage setting.
+
+IIN_HOST:
+  type: register
+  address: 0x0E
+  size_bits: 16
+  reset_value: 0x4100
+  fields:
+    IIN_HOST:
+      base: uint
+      start: 8
+      end: 15
+      description:  Maximum input current limit with 10mΩ sense resistor.
+
+MANUFACTURE_ID:
+  type: register
+  address: 0x2E
+  size_bits: 8
+  reset_value: 0x40
+  fields:
+    MANUFACTURE_ID:
+      base: uint
+      start: 0
+      end: 8
+      description:  Manufacture ID.
+
+DEVICE_ID:
+  type: register
+  address: 0x2F
+  size_bits: 8
+  reset_value: 0xe0
+  fields:
+    DEVICE_ID:
+      base: uint
+      start: 0
+      end: 8
+      description: Device ID.

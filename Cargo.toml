@@ -1,19 +1,44 @@
 [package]
-name = "embedded-rust-template"
+name = "bq25723"
 version = "0.1.0"
-edition = "2021"
+repository = "https://github.com/OpenDevicePartnership/bq25723"
 license = "MIT"
-repository = "https://github.com/OpenDevicePartnership/embedded-rust-template"
-rust-version = "1.85"
+description = "Platform-agnostic Rust driver for the Texas Instruments BQ25723 battery charge controller."
+readme = "README.md"
+keywords = ["bq25723", "TI", "Texas Instruments", "battery", "charge", "charging", "i2c", "driver", "embedded-hal-driver"]
+categories = ["embedded", "hardware-support", "no-std"]
+documentation = "https://docs.rs/bq25723"
+include = [
+	"/**/*.rs",
+	"/Cargo.toml",
+	"/README.md",
+	"/LICENSE",
+	"/device.yaml",
+]
+edition = "2024"
 
 [dependencies]
-# dependencies for all targets
+device-driver = { version = "1.0.3", default-features = false, features = ["yaml"] }
+defmt = { version = "0.3", optional = true }
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+embedded-batteries-async = "0.1.0"
 
-[target.'cfg(target_os = "none")'.dependencies]
-# dependencies for no-std targets
+[dev-dependencies]
+embedded-hal-mock = { version = "0.11.1", features = ["embedded-hal-async"] }
+tokio = { version = "1.42.0", features = ["rt", "macros"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+
 
 [lints.clippy]
-suspicious = "forbid"
 correctness = "forbid"
+suspicious = "forbid"
 perf = "forbid"
 style = "forbid"
+pedantic = "deny"
+
+[features]
+defmt-03 = ["dep:defmt", "device-driver/defmt-03", "embedded-batteries-async/defmt"]
