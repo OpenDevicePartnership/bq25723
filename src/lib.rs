@@ -94,16 +94,17 @@ impl<I2c: embedded_hal_async::i2c::I2c> Bq25723<I2c> {
     }
     fn ma_to_reg_value(ma: u16) -> u8 {
         let reg_value = ma / 64;
-        reg_value.clamp(0, u8::MAX as u16) as u8
+        // Safe from panics because we clamp between u8::MIN and u8::MAX
+        u8::try_from(reg_value.clamp(u16::from(u8::MIN), u16::from(u8::MAX))).unwrap()
     }
 
     fn reg_value_to_ma(reg: u8) -> u16 {
-        (reg as u16) * 64
+        (u16::from(reg)) * 64
     }
 
     fn mv_to_reg_value(mv: u16) -> u16 {
         let reg_value = mv / 8;
-        reg_value.clamp(0, u16::MAX)
+        reg_value.clamp(u16::MIN, u16::MAX)
     }
 
     fn reg_value_to_mv(reg: u16) -> u16 {
