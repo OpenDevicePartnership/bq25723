@@ -1,4 +1,85 @@
 
 # cargo-vet audits file
 
-[audits]
+[[audits.bitfield-struct]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "0.10.1"
+
+[[audits.bitflags]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "2.9.1 -> 2.9.4"
+
+[[audits.embedded-batteries]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "0.2.1"
+
+[[audits.embedded-batteries-async]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "0.2.1"
+
+[[audits.windows-sys]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-run"
+version = "0.59.0"
+
+[[audits.zerocopy]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "0.8.25 -> 0.8.26"
+
+[[audits.zerocopy-derive]]
+who = "matteotullo <matteotullo@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "0.8.25 -> 0.8.26"
+
+[[trusted.anyhow]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-05"
+end = "2026-09-04"
+
+[[trusted.cfg-if]]
+criteria = "safe-to-deploy"
+user-id = 55123 # rust-lang-owner
+start = "2025-06-09"
+end = "2026-09-04"
+
+[[trusted.libc]]
+criteria = "safe-to-deploy"
+user-id = 55123 # rust-lang-owner
+start = "2024-08-15"
+end = "2026-09-04"
+
+[[trusted.proc-macro2]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-04-23"
+end = "2026-09-04"
+
+[[trusted.rustc-demangle]]
+criteria = "safe-to-deploy"
+user-id = 55123 # rust-lang-owner
+start = "2023-03-23"
+end = "2026-09-04"
+
+[[trusted.syn]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-03-01"
+end = "2026-09-04"
+
+[[trusted.thiserror]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-09"
+end = "2026-09-04"
+
+[[trusted.thiserror-impl]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-09"
+end = "2026-09-04"
