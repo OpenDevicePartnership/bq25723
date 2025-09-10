@@ -1,63 +1,22 @@
-# embedded-rust-template
-Template repository for Embedded Rust development
+# BQ25723 Rust Device Driver
 
-## Customizing This Template
+A `#[no_std]` platform-agnostic driver for the [BQ25723](https://www.ti.com/lit/ds/symlink/bq25723.pdf) buck-boost battery charge controller, capable of charging a 2- to 5-cell battery, using the [embedded-hal](https://docs.rs/embedded-hal) traits.
 
-### Changing the Target Architecture
-
-This template is configured for `thumbv8m.main-none-eabihf`, by default, but you can modify it for other targets (i.e. `aarch64-unknown-none`):
-
-1. **VSCode Settings**: Update the target in `.vscode/settings.json`:
-   ```json
-   "rust-analyzer.cargo.target": "your-target-architecture"
-   ```
+A higher level API will be built on top of the lower level register accessor using the [embedded-batteries](https://github.com/OpenDevicePartnership/embedded-batteries) traits.
 
 
-This configuration ensures that:
-- Only the specified target architecture is analyzed, not the host platform
-- Code is checked against the no_std environment
+## MSRV
 
-To temporarily analyze code for the host platform instead, you can remove the `rust-analyzer.cargo.target` setting.
+Currently, rust `1.85` and up is supported.
 
-2. **GitHub Workflows**: Modify the target in two workflow files:
-   - `.github/workflows/nostd.yml`: Update the targets in the matrix:
-     ```yaml
-     matrix:
-       target: [your-target-architecture]
-     ```
-   - `.github/workflows/check.yml`: If there are any target-specific checks, update them accordingly.
+## License
 
-3. **Cargo Configuration**: If needed, you can add target-specific configuration in a `.cargo/config.toml` file.
+Licensed under the terms of the [MIT license](http://opensource.org/licenses/MIT).
 
-### Converting from Binary to Library
+## Contribution
 
-To convert this project from a binary to a library:
+Unless you explicitly state otherwise, any contribution submitted for
+inclusion in the work by you shall be licensed under the terms of the
+MIT license.
 
-1. **Cargo.toml**: Update your project structure:
-   ```toml
-   [lib]
-   name = "your_library_name"
-   ```
-
-2. **Directory Structure**:
-   - For a library, ensure you have a `src/lib.rs` file instead of `src/main.rs`
-   - Move your code from `main.rs` to `lib.rs` and adjust as needed
-
-3. **No-std Configuration**: If you're creating a no-std library, ensure you have:
-   ```rust
-   // In lib.rs
-   #![cfg_attr(target_os = "none", no_std)]
-   // Add other attributes as needed
-   ```
-
-### Project Dependencies
-
-Update the dependencies in `Cargo.toml` based on your target platform:
-
-```toml
-[dependencies]
-# Common dependencies for all targets
-
-[target.'cfg(target_os = "none")'.dependencies]
-# Dependencies for no-std targets
-```
+License: MIT
