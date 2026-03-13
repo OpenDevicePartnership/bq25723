@@ -21,6 +21,16 @@ who = "matteotullo <matteotullo@microsoft.com>"
 criteria = "safe-to-deploy"
 version = "0.2.1"
 
+[[audits.once_cell]]
+who = "Jerry Xie <jerryxie@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "1.21.3 -> 1.21.4"
+
+[[audits.pin-project-lite]]
+who = "Jerry Xie <jerryxie@microsoft.com>"
+criteria = "safe-to-run"
+delta = "0.2.16 -> 0.2.17"
+
 [[audits.windows-sys]]
 who = "matteotullo <matteotullo@microsoft.com>"
 criteria = "safe-to-run"
@@ -42,11 +52,53 @@ user-id = 3618 # David Tolnay (dtolnay)
 start = "2019-10-05"
 end = "2026-09-04"
 
+[[trusted.backtrace]]
+criteria = "safe-to-deploy"
+user-id = 55123 # rust-lang-owner
+start = "2025-05-06"
+end = "2027-03-13"
+
+[[trusted.bitflags]]
+criteria = "safe-to-deploy"
+user-id = 3204 # Ashley Mannix (KodrAus)
+start = "2019-05-02"
+end = "2027-03-13"
+
 [[trusted.cfg-if]]
 criteria = "safe-to-deploy"
 user-id = 55123 # rust-lang-owner
 start = "2025-06-09"
 end = "2026-09-04"
+
+[[trusted.dd-manifest-tree]]
+criteria = "safe-to-deploy"
+user-id = 85562 # Dion Dokter (diondokter)
+start = "2024-11-10"
+end = "2027-03-13"
+
+[[trusted.device-driver]]
+criteria = "safe-to-deploy"
+user-id = 85562 # Dion Dokter (diondokter)
+start = "2020-09-28"
+end = "2027-03-13"
+
+[[trusted.device-driver-generation]]
+criteria = "safe-to-deploy"
+user-id = 85562 # Dion Dokter (diondokter)
+start = "2024-01-07"
+end = "2027-03-13"
+
+[[trusted.device-driver-macros]]
+criteria = "safe-to-deploy"
+user-id = 85562 # Dion Dokter (diondokter)
+start = "2024-01-07"
+end = "2027-03-13"
+
+[[trusted.itoa]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-05-02"
+end = "2027-03-13"
 
 [[trusted.libc]]
 criteria = "safe-to-deploy"
@@ -54,17 +106,47 @@ user-id = 55123 # rust-lang-owner
 start = "2024-08-15"
 end = "2026-09-04"
 
+[[trusted.memchr]]
+criteria = "safe-to-deploy"
+user-id = 189 # Andrew Gallant (BurntSushi)
+start = "2019-07-07"
+end = "2027-03-13"
+
+[[trusted.object]]
+criteria = "safe-to-run"
+user-id = 4415 # Philip Craig (philipc)
+start = "2019-04-26"
+end = "2027-03-13"
+
+[[trusted.prettyplease]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2022-01-04"
+end = "2027-03-13"
+
 [[trusted.proc-macro2]]
 criteria = "safe-to-deploy"
 user-id = 3618 # David Tolnay (dtolnay)
 start = "2019-04-23"
 end = "2026-09-04"
 
+[[trusted.quote]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-04-09"
+end = "2027-03-13"
+
 [[trusted.rustc-demangle]]
 criteria = "safe-to-deploy"
 user-id = 55123 # rust-lang-owner
 start = "2023-03-23"
 end = "2026-09-04"
+
+[[trusted.serde_json]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-02-28"
+end = "2027-03-13"
 
 [[trusted.syn]]
 criteria = "safe-to-deploy"
@@ -83,3 +165,33 @@ criteria = "safe-to-deploy"
 user-id = 3618 # David Tolnay (dtolnay)
 start = "2019-10-09"
 end = "2026-09-04"
+
+[[trusted.unicode-ident]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2021-10-02"
+end = "2027-03-13"
+
+[[trusted.winnow]]
+criteria = "safe-to-deploy"
+user-id = 6743 # Ed Page (epage)
+start = "2023-02-22"
+end = "2027-03-13"
+
+[[trusted.zerocopy]]
+criteria = "safe-to-deploy"
+user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+start = "2019-02-28"
+end = "2027-03-13"
+
+[[trusted.zerocopy-derive]]
+criteria = "safe-to-deploy"
+user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+start = "2019-02-28"
+end = "2027-03-13"
+
+[[trusted.zmij]]
+criteria = "safe-to-deploy"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2025-12-18"
+end = "2027-03-13"
