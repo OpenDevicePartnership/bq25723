@@ -36,32 +36,6 @@ jobs:
       - name: cargo fmt --check
         run: cargo fmt --check
 
-  clippy:
-    runs-on: ubuntu-latest
-    name: ${{ matrix.toolchain }} / clippy
-    permissions:
-      contents: read
-      checks: write
-    strategy:
-      fail-fast: false
-      matrix:
-        # Get early warning of new lints which are regularly introduced in beta channels.
-        toolchain: [stable, beta]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install ${{ matrix.toolchain }}
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          components: clippy
-      - name: cargo clippy
-        uses: giraffate/clippy-action@v1
-        with:
-          reporter: 'github-pr-check'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
   # Enable once we have a released crate
   # semver:
   #   runs-on: ubuntu-latest
@@ -96,23 +70,33 @@ jobs:
         env:
           RUSTDOCFLAGS: --cfg docsrs
 
-  hack:
+  hack-clippy:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
     # which is required for feature unification
     runs-on: ubuntu-latest
-    name: ubuntu / stable / features
+    name: ${{ matrix.toolchain }} / ${{ matrix.target }} / clippy
+    strategy:
+      fail-fast: false
+      matrix:
+        # Get early warning of new lints which are regularly introduced in beta channels.
+        toolchain: [stable, beta]
+        target: [x86_64-unknown-linux-gnu, thumbv8m.main-none-eabihf]
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Install stable
+      - name: Install ${{ matrix.toolchain }}
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
+          components: clippy
       - name: cargo install cargo-hack
         uses: taiki-e/install-action@cargo-hack
       # intentionally no target specifier; see https://github.com/jonhoo/rust-ci-conf/pull/4
       # --feature-powerset runs for every combination of features
       - name: cargo hack
-        run: cargo hack --feature-powerset check
+        run: cargo hack --feature-powerset --target ${{ matrix.target }} clippy --locked -- -Dwarnings -D clippy::suspicious -D clippy::correctness -D clippy::perf -D clippy::style
 
   deny:
     # cargo-deny checks licenses, advisories, sources, and bans for
@@ -131,7 +115,7 @@ jobs:
           log-level: warn
           manifest-path: ./Cargo.toml
           command: check
-          arguments: --all-features
+          arguments: --all-features --locked
 
   test:
     runs-on: ubuntu-latest
@@ -145,7 +129,9 @@ jobs:
       - name: cargo install cargo-hack
         uses: taiki-e/install-action@cargo-hack
       - name: cargo test
-        run: cargo hack --feature-powerset test
+        run: cargo hack --feature-powerset test --locked
+      - name: cargo clippy test
+        run: cargo hack --feature-powerset clippy --tests --locked -- -Dwarnings -D clippy::suspicious -D clippy::correctness -D clippy::perf -D clippy::style
 
   msrv:
     # check that we can build using the minimal rust version that is specified by this crate
@@ -166,4 +152,19 @@ jobs:
         with:
           toolchain: ${{ matrix.msrv }}
       - name: cargo +${{ matrix.msrv }} check
-        run: cargo check
+        run: cargo check --locked
+
+  machete:
+    # cargo-machete checks for unused dependencies in Cargo.toml files
+    runs-on: ubuntu-latest
+    name: ubuntu / stable / machete
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: cargo install cargo-machete
+        uses: taiki-e/install-action@cargo-machete
+      - name: cargo machete
+        run: cargo machete
