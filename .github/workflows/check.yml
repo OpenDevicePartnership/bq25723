@@ -1,11 +1,12 @@
 # This workflow runs whenever a PR is opened or updated, or a commit is pushed to main. It runs
 # several checks:
-# - commit_list: produces a list of commits to be checked
 # - fmt: checks that the code is formatted according to rustfmt
-# - clippy: checks that the code does not contain any clippy warnings
 # - doc: checks that the code can be documented without errors
-# - hack: check combinations of feature flags
+# - hack-clippy: checks combinations of feature flags and clippy lints
+# - deny: checks licenses, advisories, sources, and bans
+# - test: runs tests across feature combinations
 # - msrv: check that the msrv specified in the crate is correct
+# - machete: checks for unused dependencies
 permissions:
   contents: read
 # This configuration allows maintainers of this repo to create a branch and pull request based on
@@ -93,7 +94,7 @@ jobs:
           components: clippy
       - name: cargo install cargo-hack
         uses: taiki-e/install-action@cargo-hack
-      # intentionally no target specifier; see https://github.com/jonhoo/rust-ci-conf/pull/4
+      # use matrix target specifier; see https://github.com/jonhoo/rust-ci-conf/pull/4
       # --feature-powerset runs for every combination of features
       - name: cargo hack
         run: cargo hack --feature-powerset --target ${{ matrix.target }} clippy --locked -- -Dwarnings -D clippy::suspicious -D clippy::correctness -D clippy::perf -D clippy::style
