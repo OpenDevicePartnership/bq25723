@@ -14,7 +14,6 @@ edition = "2024"
 [dependencies]
 device-driver = { version = "1.0.7", default-features = false }
 defmt = { version = "0.3", optional = true }
-embedded-hal = "1.0.0"
 embedded-hal-async = "1.0.0"
 embedded-batteries-async = "0.3.4"
 
