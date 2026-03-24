@@ -14,6 +14,13 @@
 
 use embedded_batteries_async::charger;
 
+#[allow(clippy::all)]
+#[allow(clippy::pedantic)]
+#[allow(unsafe_code)]
+mod device;
+
+pub use crate::device::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 /// BQ25723 errors
@@ -29,11 +36,6 @@ pub struct DeviceInterface<I2c: embedded_hal_async::i2c::I2c> {
     /// embedded-hal-async compliant I2C bus
     pub i2c: I2c,
 }
-
-device_driver::create_device!(
-    device_name: Device,
-    manifest: "device.yaml"
-);
 
 impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface for DeviceInterface<I2c> {
     type Error = BQ25723Error<I2c::Error>;

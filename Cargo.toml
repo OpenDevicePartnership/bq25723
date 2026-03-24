@@ -5,22 +5,14 @@ repository = "https://github.com/OpenDevicePartnership/bq25723"
 license = "MIT"
 description = "Platform-agnostic Rust driver for the Texas Instruments BQ25723 battery charge controller."
 readme = "README.md"
-keywords = ["bq25723", "TI", "Texas Instruments", "battery", "charge", "charging", "i2c", "driver", "embedded-hal-driver"]
+keywords = ["TI", "battery", "charger", "driver", "embedded-hal-driver"]
 categories = ["embedded", "hardware-support", "no-std"]
 documentation = "https://docs.rs/bq25723"
-include = [
-	"/**/*.rs",
-	"/Cargo.toml",
-	"/README.md",
-	"/LICENSE",
-	"/device.yaml",
-]
+include = ["/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/bq25723.yaml"]
 edition = "2024"
 
 [dependencies]
-device-driver = { version = "1.0.7", default-features = false, features = [
-	"yaml",
-] }
+device-driver = { version = "1.0.7", default-features = false }
 defmt = { version = "0.3", optional = true }
 embedded-hal = "1.0.0"
 embedded-hal-async = "1.0.0"
@@ -31,7 +23,7 @@ embedded-hal-mock = { version = "0.11.1", features = ["embedded-hal-async"] }
 tokio = { version = "=1.45.0", features = ["rt", "macros"] }
 
 [lints.rust]
-unsafe_code = "forbid"
+unsafe_code = "deny"
 missing_docs = "deny"
 
 
@@ -43,4 +35,8 @@ style = "forbid"
 pedantic = "deny"
 
 [features]
-defmt-03 = ["dep:defmt", "device-driver/defmt-03", "embedded-batteries-async/defmt"]
+defmt-03 = [
+	"dep:defmt",
+	"device-driver/defmt-03",
+	"embedded-batteries-async/defmt",
+]
