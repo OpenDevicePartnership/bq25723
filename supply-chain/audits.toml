@@ -11,6 +11,16 @@ who = "matteotullo <matteotullo@microsoft.com>"
 criteria = "safe-to-deploy"
 delta = "2.9.1 -> 2.9.4"
 
+[[audits.device-driver]]
+who = "Felipe Balbi <febalbi@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "1.0.9"
+
+[[audits.device-driver]]
+who = "Felipe Balbi <febalbi@microsoft.com>"
+criteria = "safe-to-run"
+version = "1.0.9"
+
 [[audits.embedded-batteries]]
 who = "matteotullo <matteotullo@microsoft.com>"
 criteria = "safe-to-deploy"
@@ -174,7 +184,7 @@ end = "2027-03-13"
 
 [[trusted.winnow]]
 criteria = "safe-to-deploy"
-user-id = 6743 # Ed Page (epage)
+user-id = 6743
 start = "2023-02-22"
 end = "2027-03-13"
 
