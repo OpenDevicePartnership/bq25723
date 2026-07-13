@@ -146,37 +146,37 @@ impl<I2c: embedded_hal_async::i2c::I2c> charger::Charger for Bq25723<I2c> {
 mod tests {
     use embedded_batteries_async::charger::Charger;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
-    use field_sets::{ChargeCurrent, ChargeOption2A, ManufactureId};
+    use field_sets::{ChargeCurrent, ChargeOption2, ManufacturerId};
 
     use super::*;
 
     #[tokio::test]
     async fn read_chip_id() {
-        let reg = ManufactureId::new();
+        let reg = ManufacturerId::new();
         let raw_reg: [u8; 1] = reg.into();
         let expectations = vec![Transaction::write_read(BQ_ADDR, vec![0x2E], vec![raw_reg[0]])];
         let i2c = Mock::new(&expectations);
         let mut bq = Device::new(DeviceInterface { i2c });
 
-        bq.manufacture_id().read_async().await.unwrap();
+        bq.manufacturer_id().read_async().await.unwrap();
 
         bq.interface.i2c.done();
     }
 
     #[tokio::test]
     async fn disable_external_ilim_pin() {
-        let mut reg = ChargeOption2A::new();
-        let raw_reg: [u8; 1] = reg.into();
+        let mut reg = ChargeOption2::new();
+        let raw_reg: [u8; 2] = reg.into();
         reg.set_en_extilim(false);
-        let raw_reg_ilim_disabled: [u8; 1] = reg.into();
+        let raw_reg_ilim_disabled: [u8; 2] = reg.into();
         let expectations = vec![
-            Transaction::write_read(BQ_ADDR, vec![0x32], vec![raw_reg[0]]),
-            Transaction::write(BQ_ADDR, vec![0x32, raw_reg_ilim_disabled[0]]),
+            Transaction::write_read(BQ_ADDR, vec![0x32], vec![raw_reg[0], raw_reg[1]]),
+            Transaction::write(BQ_ADDR, vec![0x32, raw_reg_ilim_disabled[0], raw_reg_ilim_disabled[1]]),
         ];
         let i2c = Mock::new(&expectations);
         let mut bq = Device::new(DeviceInterface { i2c });
 
-        bq.charge_option_2_a()
+        bq.charge_option_2()
             .modify_async(|r| r.set_en_extilim(false))
             .await
             .unwrap();
