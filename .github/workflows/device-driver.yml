@@ -28,9 +28,9 @@ jobs:
         with:
           crate: device-driver-cli
       - name: Generate files
-        run: device-driver-cli --manifest bq25723.yaml --device-name Device -o ci_gen.rs
+        run: ddc build rust -s bq25723.ddsl -o ci_gen.rs --rust-defmt-feature=defmt-03
       - name: Format generated file
-        run: rustfmt --edition 2024 ci_gen.rs 
+        run: rustfmt --edition 2024 ci_gen.rs
       - name: Check that the files are the exact same
         uses: LouisBrunner/diff-action@v3.0.0
         with:

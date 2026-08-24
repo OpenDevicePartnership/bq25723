@@ -146,16 +146,16 @@ impl<I2c: embedded_hal_async::i2c::I2c> charger::Charger for Bq25723<I2c> {
 
 #[cfg(test)]
 mod tests {
-    use device_driver::Block;
+    use super::{ChargeCurrent, ChargeOption2, ManufacturerId};
+    use device_driver::{Block, Fieldset};
     use embedded_batteries_async::charger::Charger;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
-    use field_sets::{ChargeCurrent, ChargeOption2, ManufacturerId};
 
     use super::*;
 
     #[tokio::test]
     async fn read_chip_id() {
-        let reg = ManufacturerId::new();
+        let reg = ManufacturerId::ZERO;
         let raw_reg: [u8; 1] = reg.into();
         let expectations = vec![Transaction::write_read(BQ_ADDR, vec![0x2E], vec![raw_reg[0]])];
         let i2c = Mock::new(&expectations);
@@ -168,7 +168,7 @@ mod tests {
 
     #[tokio::test]
     async fn disable_external_ilim_pin() {
-        let mut reg = ChargeOption2::new();
+        let mut reg = ChargeOption2::ZERO;
         let raw_reg: [u8; 2] = reg.into();
         reg.set_en_extilim(false);
         let raw_reg_ilim_disabled: [u8; 2] = reg.into();
@@ -189,7 +189,7 @@ mod tests {
 
     #[tokio::test]
     async fn charging_current_trait_test() {
-        let mut reg = ChargeCurrent::new();
+        let mut reg = ChargeCurrent::ZERO;
         // Set charge current to 1984mA
         reg.set_charge_current(31);
         let raw_reg_2a: [u8; 2] = reg.into();

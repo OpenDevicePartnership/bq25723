@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        msrv: ["1.88"]
+        msrv: ["1.94"]
     name: ubuntu / ${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
