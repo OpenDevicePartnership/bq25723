@@ -1,0 +1,611 @@
+device Device {
+    default-byte-order: LE,
+    register-address-type: u8,
+    default-access: RW,
+
+    register CHARGE_OPTION_0 {
+        address: 0x00,
+        reset: 0xE70E,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Charge Inhibit. When this bit is 0, battery charging will start with valid values in the ChargeVoltage() and ChargeCurrent() registers.
+            field CHRG_INHIBIT 0,
+            /// IIN_DPM Enable. Host writes this bit to enable IIN_DPM regulation loop. When the IIN_DPM is disabled by the charger (refer to IIN_DPM_AUTO_DISABLE), this bit goes LOW.
+            field EN_IIN_DPM 1,
+            /// LDO Mode Enable. When battery voltage is below minimum system voltage, the charger is in pre-charge with LDO mode enabled. When enabled, precharge current is set by ChargeCurrent register and clamped below 384 mA (2-4 cell, 1 cell VBAT<3.0V) or 2A (1 cell 3.0V<VBAT<3.6V).
+            field EN_LDO 2,
+            /// IBAT Amplifier Ratio. The ratio of voltage on IBAT and voltage across SRP and SRN. 0=8x, 1=16x.
+            field IBAT_GAIN 3 -> _ as enum IbatGain {
+                EightX: 0,
+                SixteenX: 1,
+            },
+            /// IADPT Amplifier Ratio. The ratio of voltage on IADPT and voltage across ACP and ACN. 0=20x, 1=40x.
+            field IADPT_GAIN 4 -> _ as enum IadptGain {
+                TwentyX: 0,
+                FortyX: 1,
+            },
+            /// LEARN mode allows the battery to discharge and converter to shut off while the adapter is present. It calibrates the battery gas gauge over a complete discharge/charge cycle.
+            field EN_LEARN 5,
+            /// Disable system under voltage protection. 0=VSYS UVP enabled (default), 1=VSYS UVP disabled.
+            field VSYS_UVP_ENZ 6,
+            /// Latch the independent comparator output after it is triggered at low state. If enabled in PROCHOT profile PP_CMP=1, STAT_COMP bit keeps 1 after triggered until read by host and cleared. Host can clear CMPOUT pin by toggling this bit.
+            field EN_CMP_LATCH 7,
+            /// Switching HS MOSFET turn on gate drive strength. 0=Enable strong drive, 1=Disable strong drive.
+            field DIS_STRGRV 8,
+            /// Switching Frequency Selection. Recommend 1200 kHz with 1 uH, 800 kHz with 2.2 uH. 0=1200 kHz, 1=800 kHz.
+            field PWM_FREQ 9 -> _ as enum SwitchingFreq {
+                TwelveHundredkHz: 0,
+                EightHundredkHz: 1,
+            },
+            /// Out-of-Audio Enable. Set minimum PFM burst frequency to above 25 kHz to avoid audio noise.
+            field EN_OOA 10,
+            /// Add OTG to CHRG_OK. Drive CHRG_OK HIGH when the device is in OTG mode.
+            field OTG_ON_CHRGOK 11,
+            /// IIN_DPM Auto Disable. When CELL_BATPRESZ pin is LOW, the charger automatically disables the IIN_DPM function by setting EN_IIN_DPM to 0.
+            field IIN_DPM_AUTO_DISABLE 12,
+            /// WATCHDOG Timer Adjust. Set maximum delay between consecutive host write of charge voltage or charge current command. If device does not receive a write within this period, ChargeCurrent is set to 0 mA.
+            field WDTMR_ADJ 14:13 -> _ as enum WatchdogTimerAdj {
+                Disabled: 0,
+                FiveSeconds: 1,
+                EightyEightSeconds: 2,
+                OneHundredSeventyFiveSeconds: 3,
+            },
+            /// Low Power Mode Enable. In low power mode, lowest quiescent current is achieved when only battery exists. REGN is off. PROCHOT, discharge current monitor buffer, power monitor buffer and independent comparator are disabled. ADC is not available.
+            field EN_LWPWR 15,
+        },
+    },
+    register CHARGE_CURRENT {
+        address: 0x02,
+        reset: 0x00,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 7-bit charge current setting. With 10 mOhm sense resistor (RSNS_RSR=0), LSB=64 mA, range 0-8128 mA. With 5 mOhm sense resistor (RSNS_RSR=1), LSB=128 mA, range 0-16256 mA.
+            field CHARGE_CURRENT 12:6,
+        },
+    },
+    register CHARGE_VOLTAGE {
+        address: 0x04,
+        reset: 0x00,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 12-bit charge voltage setting. LSB=8 mV, range 1024-19200 mV. Default depends on CELL_BATPRESZ pin setting (1S=4200 mV, 2S=8400 mV, 3S=12600 mV, 4S=16800 mV). Any write below 1024 mV or above 19200 mV is ignored.
+            field CHARGE_VOLTAGE 14:3,
+        },
+    },
+    register OTG_VOLTAGE {
+        address: 0x06,
+        reset: 0x9C4,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 12-bit OTG output voltage setting. LSB=8 mV, range 3000-24000 mV. Default 5000 mV (USB). Any write below 3000 mV or above 24000 mV is ignored.
+            field OTG_VOLTAGE 13:2,
+        },
+    },
+    register OTG_CURRENT {
+        address: 0x08,
+        reset: 0x3C00,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 7-bit OTG output current limit. With 10 mOhm sense resistor, LSB=50 mA, range 0-6350 mA. Default 3000 mA.
+            field OTG_CURRENT 14:8,
+        },
+    },
+    register INPUT_VOLTAGE {
+        address: 0x0A,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 8-bit input voltage (VINDPM) setting. LSB=64 mV, range 3200-19520 mV. Fixed DC offset of 3200 mV. Default is VBUS at no load minus 1.28 V.
+            field INPUT_VOLTAGE 13:6,
+        },
+    },
+    register VSYS_MIN {
+        address: 0x0C,
+        reset: 0x00,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 8-bit minimum system voltage setting. LSB=100 mV, range 1000-19200 mV. Default depends on CELL_BATPRESZ pin (1S=3600 mV, 2S=6600 mV, 3S=9200 mV, 4S=12300 mV). Writing 0 sets to default based on CELL_BATPRESZ pin.
+            field VSYS_MIN 15:8,
+        },
+    },
+    register IIN_HOST {
+        address: 0x0E,
+        reset: 0x4100,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 7-bit input current limit set by host. With 10 mOhm sense resistor (RSNS_RAC=0), LSB=50 mA, range 50-6350 mA, default 3250 mA. 50 mA offset at code 0. With 5 mOhm sense resistor (RSNS_RAC=1), 100 mA offset at code 0. Upon adapter removal, reset to default.
+            field IIN_HOST 14:8,
+        },
+    },
+    register CHARGER_STATUS {
+        address: 0x20,
+        reset: 0x00,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// OTG UVP fault. Latched until read by host.
+            field FAULT_OTG_UVP 0 RO,
+            /// OTG OVP fault. Latched until read by host.
+            field FAULT_OTG_OVP 1 RO,
+            /// Force converter off fault (when FORCE_CONV_OFF=1). Latched until read by host.
+            field FAULT_FORCE_CONVERTER_OFF 2 RO,
+            /// VSYS_UVP fault status and clear. Latched until cleared by host writing this bit to 0. Set when system voltage is lower than VSYS_UVP and 7 restart attempts fail.
+            field FAULT_VSYS_UVP 3,
+            /// SYSOVP Status and Clear. When SYSOVP occurs, this bit is HIGH and converter is disabled. Write 0 or unplug adapter to clear the SYSOVP latch and re-enable converter.
+            field FAULT_SYSOVP 4,
+            /// ACOC fault. Latched until read by host.
+            field FAULT_ACOC 5 RO,
+            /// BATOC fault. Latched until read by host. In PTM mode when EN_BATOC=1, indicates both BATOVP and BATOC.
+            field FAULT_BATOC 6 RO,
+            /// ACOV fault. Latched until read by host.
+            field FAULT_ACOV 7 RO,
+            /// Charger is in OTG mode.
+            field IN_OTG 8 RO,
+            /// Charger is in pre-charge.
+            field IN_PCHRG 9 RO,
+            /// Charger is in fast charge.
+            field IN_FCHRG 10 RO,
+            /// Charger is in IIN_DPM during forward mode.
+            field IN_IIN_DPM 11 RO,
+            /// Charger is in VINDPM during forward mode, or voltage regulation during OTG mode.
+            field IN_VINDPM 12 RO,
+            /// Charger is operated in VAP mode.
+            field IN_VAP 13 RO,
+            /// ICO routine successfully completed.
+            field ICO_DONE 14 RO,
+            /// Input source status. Valid when VBUS is within 3.5 V to 26 V range. Different from CHRG_OK; CHRG_OK valid implies STAT_AC valid but not vice versa. Force converter off, ACOC, TSHUT, SYSOVP, VSYS_UVP, BATOVP can pull CHRG_OK low.
+            field STAT_AC 15 RO,
+        },
+    },
+    register PROCHOT_STATUS {
+        address: 0x22,
+        reset: 0xB800,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// PROCHOT Profile Adapter Removal status. Latched until read by host.
+            field STAT_ADAPTER_REMOVAL 0 RO,
+            /// PROCHOT Profile Battery Removal status. Latched until read by host.
+            field STAT_BATTERY_REMOVAL 1 RO,
+            /// PROCHOT Profile VSYS status. Latched until read by host.
+            field STAT_VSYS 2 RO,
+            /// PROCHOT Profile IDCHG1 status. Latched until read by host.
+            field STAT_IDCHG1 3 RO,
+            /// PROCHOT Profile INOM status. Latched until read by host.
+            field STAT_INOM 4 RO,
+            /// PROCHOT Profile ICRIT status. Latched until read by host.
+            field STAT_ICRIT 5 RO,
+            /// PROCHOT Profile CMPOUT status. Latched until read by host.
+            field STAT_COMP 6 RO,
+            /// PROCHOT Profile VINDPM status. PROCHOT pin stays low until host writes this status bit to 0 when PP_VINDPM=1.
+            field STAT_VINDPM 7,
+            /// PROCHOT_EXIT_VAP status. When charger exits VAP mode (host disable or faults), PROCHOT pin stays low until host writes this bit to 0.
+            field STAT_EXIT_VAP 8,
+            /// VAP failure status. Reports failure to load VBUS 7 consecutive times in VAP mode. Charger exits VAP and latches off until host writes 0.
+            field STAT_VAP_FAIL 9,
+            /// Thermal shutdown triggered. Latched until read by host. If TSHUT is still present during read, bit remains set.
+            field TSHUT 10 RO,
+            /// PROCHOT Pulse Clear. Write 0 to clear PROCHOT pulse and drive PROCHOT pin HIGH when EN_PROCHOT_EXT=1.
+            field PROCHOT_CLEAR 11,
+            /// PROCHOT Pulse Width minimum when EN_PROCHOT_EXT=0.
+            field PROCHOT_WIDTH 13:12 -> _ as enum ProchotPulseWidth {
+                OneHundredMicroseconds: 0,
+                OneMillisecond: 1,
+                FiveMilliseconds: 2,
+                TenMilliseconds: 3,
+            },
+            /// PROCHOT Pulse Extension Enable. Keep PROCHOT pin LOW until host writes PROCHOT_CLEAR=0.
+            field EN_PROCHOT_EXT 14,
+        },
+    },
+    register IIN_DPM {
+        address: 0x24,
+        reset: 0x4100,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 7-bit actual input current limit in use. With 10 mOhm sense resistor, LSB=50 mA. May differ from IIN_HOST after ICO. 50 mA offset at code 0.
+            field IIN_DPM 14:8 RO,
+        },
+    },
+    register ADC_VBUS_PSYS {
+        address: 0x26,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 8-bit digital output of system power. Full range 3.06 V, LSB 12 mV (ADC_FULLSCALE=1). Full range 2.04 V, LSB 8 mV (ADC_FULLSCALE=0).
+            field ADC_PSYS 7:0 RO,
+            /// 8-bit digital output of input voltage. Full range 0-24480 mV, LSB 96 mV.
+            field ADC_VBUS 15:8 RO,
+        },
+    },
+    register ADC_IBAT {
+        address: 0x28,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 7-bit digital output of battery discharge current. With 10 mOhm sense resistor (RSNS_RSR=0), full range 32512 mA, LSB 256 mA. With 5 mOhm (RSNS_RSR=1), full range 65024 mA, LSB 512 mA.
+            field ADC_IDCHG 6:0 RO,
+            /// 7-bit digital output of battery charge current. With 10 mOhm sense resistor (RSNS_RSR=0), full range 8128 mA, LSB 64 mA. With 5 mOhm (RSNS_RSR=1), full range 16256 mA, LSB 128 mA.
+            field ADC_ICHG 14:8 RO,
+        },
+    },
+    register ADC_IIN_CMPIN {
+        address: 0x2A,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 8-bit digital output of CMPIN voltage. Full range 3.06 V, LSB 12 mV (ADC_FULLSCALE=1). Full range 2.04 V, LSB 8 mV (ADC_FULLSCALE=0).
+            field ADC_CMPIN 7:0 RO,
+            /// 8-bit digital output of input current. With 10 mOhm sense resistor (RSNS_RAC=0), full range 12750 mA, LSB 50 mA. With 5 mOhm (RSNS_RAC=1), full range 25500 mA, LSB 100 mA.
+            field ADC_IIN 15:8 RO,
+        },
+    },
+    register ADC_VSYS_VBAT {
+        address: 0x2C,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// 8-bit digital output of battery voltage. Full range 2.88-19.2 V, LSB 64 mV. Fixed offset 2.88 V.
+            field ADC_VBAT 7:0 RO,
+            /// 8-bit digital output of system voltage. Full range 2.88-19.2 V, LSB 64 mV. Fixed offset 2.88 V.
+            field ADC_VSYS 15:8 RO,
+        },
+    },
+    register MANUFACTURER_ID {
+        address: 0x2E,
+        reset: 0x40,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 1,
+        
+            /// Manufacturer ID. Always returns 0x40.
+            field MANUFACTURER_ID 7:0 RO,
+        },
+    },
+    register DEVICE_ID {
+        address: 0x2F,
+        reset: 0xE0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 1,
+        
+            /// Device ID. BQ25723 returns 0xE0 (11010000b).
+            field DEVICE_ID 7:0 RO,
+        },
+    },
+    register CHARGE_OPTION_1 {
+        address: 0x30,
+        reset: 0x3300,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Auto Wakeup Enable. If battery is below VSYS_MIN, device automatically enables 128 mA charging current for 30 mins. When battery charges above minimum system voltage, charge terminates and bit resets to LOW.
+            field AUTO_WAKEUP_EN 0,
+            /// Discharge SRN for Shipping Mode. When set, discharge SRN pin down in 140 ms at 20 mA. Auto-resets to 0 after 140 ms. Used to discharge VBAT pin capacitor voltage for battery gauge device shipping mode.
+            field EN_SHIP_DCHG 1,
+            /// PTM (Pass Through Mode) enable. In PTM, buck and boost high-side FETs are both ON, low-side FETs both OFF. Input power passes directly through to system. Automatically resets to zero.
+            field EN_PTM 2,
+            /// Force Converter Off function. When independent comparator triggers (CMPOUT pulled down), converter latches off and CHRG_OK goes LOW. To exit, CMPOUT must be released high and this bit must be cleared.
+            field FORCE_CONV_OFF 3,
+            /// Independent comparator deglitch time, applied to falling edge of CMPOUT (HIGH to LOW).
+            field CMP_DEG 5:4 -> _ as enum ComparatorDeglitchTime {
+                FiveMicroseconds: 0,
+                TwoMilliseconds: 1,
+                TwentyMilliseconds: 2,
+                FiveSeconds: 3,
+            },
+            /// Independent Comparator output Polarity. 0=CMPIN above threshold makes CMPOUT LOW (internal hysteresis). 1=CMPIN below threshold makes CMPOUT LOW (external hysteresis).
+            field CMP_POL 6,
+            /// Independent Comparator internal Reference. 0=2.3 V, 1=1.2 V.
+            field CMP_REF 7,
+            /// Enable fast compensation to increase bandwidth under 5 mOhm RAC (RSNS_RAC=1) for input current up to 6.4 A. When 0, IIN_HOST DAC extends to 10 A but ICHG loop is slower. When 1, IIN_HOST DAC clamped at 6.4 A with faster ICHG loop.
+            field EN_FAST_5MOHM 8,
+            /// PSYS Gain. Ratio of PSYS output current vs total system power. 0=0.25 uA/W, 1=1 uA/W.
+            field PSYS_RATIO 9 -> _ as enum PsysGain {
+                ZeroPointTwoFiveuAperW: 0,
+                OneuAperW: 1,
+            },
+            /// Charge sense resistor RSR. 0=10 mOhm, 1=5 mOhm.
+            field RSNS_RSR 10 -> _ as enum ChargeSenseResistor {
+                TenMilliOhm: 0,
+                FiveMilliOhm: 1,
+            },
+            /// Input sense resistor RAC. 0=10 mOhm, 1=5 mOhm.
+            field RSNS_RAC 11 -> _ as enum InputSenseResistor {
+                TenMilliOhm: 0,
+                FiveMilliOhm: 1,
+            },
+            /// PSYS Enable and Definition. In low power mode (EN_LWPWR=1), PSYS sensing and buffer are always disabled regardless of this value. 00=PBUS+PBAT, 01=PBUS, 10=Reserved, 11=Off (minimize Iq).
+            field PSYS_CONFIG 13:12 -> _ as enum PsysConfig {
+                PbusAndPbat: 0,
+                Pbus: 1,
+                Reserved: 2,
+                Disabled: 3,
+            },
+            /// Enable PROCHOT during battery only low power mode. Uses independent comparator to monitor system voltage with low power consumption. Do not enable with adapter present.
+            field EN_PROCHOT_LPWR 14,
+            /// IBAT Enable. Enable the IBAT output buffer. In low power mode (EN_LWPWR=1), IBAT buffer is always disabled regardless of this value.
+            field EN_IBAT 15,
+        },
+    },
+    register CHARGE_OPTION_2 {
+        address: 0x32,
+        reset: 0xB7,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Battery discharge overcurrent threshold as percentage of PROCHOT IDCHG_TH2. Note for 1S application, threshold could derate at low SRN/SRP common voltage.
+            field BATOC_VTH 0 -> _ as enum BatocThreshold {
+                OneHundredThirtyThreePercent: 0,
+                TwoHundredPercent: 1,
+            },
+            /// Battery discharge overcurrent (BATOC) protection enable. Upon BATOC, converter is disabled. Non-latch fault, resumes after 250 ms relax time.
+            field EN_BATOC 1,
+            /// ACOC Limit. Set ACOC threshold as percentage of ILIM2. 0=133% of ILIM2, 1=200% of ILIM2.
+            field ACOC_VTH 2 -> _ as enum AcocThreshold {
+                OneHundredThirtyThreePercent: 0,
+                TwoHundredPercent: 1,
+            },
+            /// Input overcurrent (ACOC) protection enable. Non-latch fault with 250 us rising edge deglitch. After input current falls below threshold, 250 ms falling edge deglitch before converter restarts.
+            field EN_ACOC 3,
+            /// Fixed input current OCP threshold by sensing ACP-ACN. 0=280 mV (RSNS_RAC=0) / 200 mV (RSNS_RAC=1). 1=150 mV (RSNS_RAC=0) / 100 mV (RSNS_RAC=1).
+            field ACX_OCP 4 -> _ as enum AcxOcpThreshold {
+                High: 0,
+                Low: 1,
+            },
+            /// Q2 OCP threshold by sensing Q2 VDS.
+            field Q2_OCP 5 -> _ as enum Q2OcpThreshold {
+                TwoHundredTenMilliVolts: 0,
+                OneHundredFiftyMilliVolts: 1,
+            },
+            /// IBAT pin monitor selection. 0=IBAT as discharge current, 1=IBAT as charge current.
+            field EN_ICHG_IDCHG 6 -> _ as enum IBatPinSelect {
+                DischargeCurrent: 0,
+                ChargeCurrent: 1,
+            },
+            /// Enable ILIM_HIZ pin to set input current limit. When enabled, input current limit is the lower of ILIM_HIZ pin and IIN_DPM register.
+            field EN_EXTILIM 7,
+            /// Peak power mode overload and relax cycle time.
+            field PKPWR_TMAX 9:8 -> _ as enum PkpwrTmax {
+                TwentyMilliseconds: 0,
+                FortyMilliseconds: 1,
+                EightyMilliseconds: 2,
+                OneSecond: 3,
+            },
+            /// Indicator that the device is in relaxation cycle. Write 0 to exit.
+            field PKPWR_RELAX_STAT 10,
+            /// Indicator that the device is in overloading cycle. Write 0 to exit.
+            field STAT_PKPWR_OVLD 11,
+            /// Enable Peak Power Mode triggered by system voltage under-shoot. Threshold is VSYS_MIN register setting. Upon adapter removal, reset to 0.
+            field EN_PKPWR_VSYS 12,
+            /// Enable Peak Power Mode triggered by input current overshoot. Threshold is IIN_DPM register. Upon adapter removal, reset to 0.
+            field EN_PKPWR_IIN_DPM 13,
+            /// Input Overload time (ILIM2 effective duration) in Peak Power Mode.
+            field PKPWR_TOVLD_DEG 15:14 -> _ as enum PkpwrTovldDeg {
+                OneMillisecond: 0,
+                TwoMilliseconds: 1,
+                FiveMilliseconds: 2,
+                TenMilliseconds: 3,
+            },
+        },
+    },
+    register CHARGE_OPTION_3 {
+        address: 0x34,
+        reset: 0x434,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// PSYS function during OTG mode. 0=battery discharge power minus OTG output power. 1=battery discharge power only.
+            field PSYS_OTG_IDCHG 0 -> _ as enum PsysOtgIdchg {
+                BatteryMinusOtg: 0,
+                BatteryOnly: 1,
+            },
+            /// Control BATFET during HIZ mode. 0=BATFET on, 1=BATFET off.
+            field BATFETOFF_HIZ 1,
+            /// Enable Independent Comparator with effective low.
+            field CMP_EN 2,
+            /// Converter inductor average current clamp. Choose the smallest option higher than maximum possible converter average inductor current.
+            field IL_AVG 4:3 -> _ as enum InductorAvgCurrentClamp {
+                SixAmps: 0,
+                TenAmps: 1,
+                FifteenAmps: 2,
+                Disabled: 3,
+            },
+            /// External OTG/VAP/FRS pin control selection. 0=pin controls VAP mode. 1=pin controls OTG mode. Do not change after OTG/VAP/FRS pin is pulled high.
+            field OTG_VAP_MODE 5,
+            /// Enable the VBUS VAP for VAP operation mode 2 and 3.
+            field EN_VBUS_VAP 6,
+            /// Turn off BATFET under battery only mode. Not allowed when not in battery only mode. Forced to 0 in battery only OTG mode.
+            field BATFET_ENZ 7,
+            /// Enable OTG compensation for VBUS effective capacitance larger than 33 uF. 0=for capacitance smaller than 33 uF, 1=for larger than 33 uF.
+            field EN_OTG_BIGCAP 8,
+            /// Enable VSYS_MIN soft slew rate transition (1 LSB/8 us = 12.5 mV/us).
+            field EN_VSYS_MIN_SOFT_SR 9,
+            /// Enable BATFET control pin by activating BATDRV pin. 0=Disable BATFET control (HIZ BATDRV pin). 1=Enable BATFET control.
+            field EN_PORT_CTRL 10,
+            /// Enable ICO (Input Current Optimizer) Algorithm. Automatically detects optimized input current limit. Requires adapter input current limit of at least 500 mA.
+            field EN_ICO_MODE 11,
+            /// OTG Mode Enable. Enable device in OTG mode when OTG/VAP/FRS pin is HIGH. Set OTG voltage/current registers before enabling.
+            field EN_OTG 12,
+            /// Reset VINDPM Threshold. Converter is disabled to measure VINDPM threshold. Auto-resets to 0 when measurement is done. Not recommended when battery voltage is lower than VSYS_MIN.
+            field RESET_VINDPM 13,
+            /// Reset all registers to POR default except VINDPM register. Auto-resets to 0 after reset.
+            field RESET_REG 14,
+            /// Device HIZ Mode Enable. Device draws minimal quiescent current with VBUS above UVLO. REGN LDO stays on, system powers from battery. ADC circuits disabled.
+            field EN_HIZ 15,
+        },
+    },
+    register PROCHOT_OPTION_0 {
+        address: 0x36,
+        reset: 0x4A81,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Enable lower threshold of PROCHOT_VINDPM comparator. 0=threshold follows VINDPM register setting. 1=threshold determined by PROCHOT_VINDPM_80_90 bit.
+            field LOWER_PROCHOT_VINDPM 0,
+            /// INOM Deglitch Time. INOM is always 10% above IIN_DPM register setting.
+            field INOM_DEG 1 -> _ as enum InomDeglitchTime {
+                OneMillisecond: 0,
+                SixtyMilliseconds: 1,
+            },
+            /// VSYS Threshold 1 to trigger discharging VBUS in VAP mode. 6-bit, fixed 5 us deglitch. Triggers when VSYS pin voltage is below threshold. Fixed DC offset 3.2 V, LSB 100 mV. 2S-4S range 3.2-9.5 V (default 6.4 V). 1S range 3.2-3.9 V (default 3.4 V).
+            field VSYS_TH1 7:2,
+            /// Lower threshold of PROCHOT_VINDPM comparator when LOWER_PROCHOT_VINDPM=1. 0=83% of VINDPM, 1=91% of VINDPM.
+            field PROCHOT_VINDPM_80_90 8 -> _ as enum ProchotVindpmThreshold {
+                EightyThreePercent: 0,
+                NinetyOnePercent: 1,
+            },
+            /// ICRIT deglitch time to trigger PROCHOT. ICRIT threshold is 110% of ILIM2.
+            field ICRIT_DEG 10:9 -> _ as enum IcritDeglitchTime {
+                FifteenMicroseconds: 0,
+                OneHundredMicroseconds: 1,
+                FourHundredMicroseconds: 2,
+                EightHundredMicroseconds: 3,
+            },
+            /// ILIM2 Threshold. 5-bit, percentage of IIN_DPM. 00001-11001 = 110%-230% (5% step). 11010-11110 = 250%-450% (50% step). 11111 = Out of Range (ignored). Default 150% (01001b).
+            field ILIM2_VTH 15:11,
+        },
+    },
+    register PROCHOT_OPTION_1 {
+        address: 0x38,
+        reset: 0x41A0,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Adapter removal PROCHOT Profile enable. EN_LWPWR=0 required to assert PROCHOT pulse after adapter removal.
+            field PP_ACOK 0,
+            /// Battery removal PROCHOT Profile enable (one-shot falling edge triggered). Immediately sends PROCHOT pulse after battery removal.
+            field PP_BATPRES 1,
+            /// VSYS PROCHOT Profile enable.
+            field PP_VSYS 2,
+            /// IDCHG1 PROCHOT Profile enable.
+            field PP_IDCHG1 3,
+            /// INOM PROCHOT Profile enable.
+            field PP_INOM 4,
+            /// ICRIT PROCHOT Profile enable.
+            field PP_ICRIT 5,
+            /// Independent comparator PROCHOT Profile enable. In low power mode (battery only), use EN_PROCHOT_LPWR instead.
+            field PP_COMP 6,
+            /// VINDPM PROCHOT Profile enable.
+            field PP_VINDPM 7,
+            /// IDCHG level 1 Deglitch Time.
+            field IDCHG_DEG1 9:8 -> _ as enum IdchgDeg1Time {
+                SeventyEightMilliseconds: 0,
+                OnePointTwoFiveSeconds: 1,
+                FiveSeconds: 2,
+                TwentySeconds: 3,
+            },
+            /// IDCHG level 1 Threshold. 6-bit, range 0-32256 mA, LSB 512 mA. If 000000b, PROCHOT is always triggered. Default 8192 mA (010000b).
+            field IDCHG_TH1 15:10,
+        },
+    },
+    register ADC_OPTION {
+        address: 0x3A,
+        reset: 0x2000,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Enable battery voltage (SRN pin) ADC channel.
+            field EN_ADC_VBAT 0,
+            /// Enable system voltage (VSYS pin) ADC channel.
+            field EN_ADC_VSYS 1,
+            /// Enable charge current ADC channel.
+            field EN_ADC_ICHG 2,
+            /// Enable discharge current ADC channel.
+            field EN_ADC_IDCHG 3,
+            /// Enable input current ADC channel.
+            field EN_ADC_IIN 4,
+            /// Enable system power (PSYS pin) ADC channel.
+            field EN_ADC_PSYS 5,
+            /// Enable VBUS voltage ADC channel.
+            field EN_ADC_VBUS 6,
+            /// Enable CMPIN voltage ADC channel.
+            field EN_ADC_CMPIN 7,
+            /// ADC input voltage range for PSYS and CMPIN channels. 0=2.04 V full scale (8 mV/LSB). 1=3.06 V full scale (12 mV/LSB). Not accurate for REGN<6 V application (VBUS and VSYS < 6 V).
+            field ADC_FULLSCALE 13 -> _ as enum AdcFullScale {
+                TwoPointZeroFourVolts: 0,
+                ThreePointZeroSixVolts: 1,
+            },
+            /// Start ADC conversion. Auto-resets to 0 after one-shot update completes.
+            field ADC_START 14,
+            /// ADC conversion mode. 0=One-shot update after ADC_START=1. 1=Continuous update every 1 sec. Each channel conversion time is 25 ms max. Total time is 25 ms times enabled channel count.
+            field ADC_CONV 15,
+        },
+    },
+    register CHARGE_OPTION_4 {
+        address: 0x3C,
+        reset: 0x48,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// PTM operation status. 0=not in PTM, 1=in PTM.
+            field STAT_PTM 0 RO,
+            /// IDCHG2 PROCHOT status. Latched until read by host.
+            field STAT_IDCHG2 1 RO,
+            /// IDCHG2 PROCHOT Profile enable.
+            field PP_IDCHG2 2,
+            /// Battery discharge current limit 2 as percentage of IDCHG_TH1. Setting higher than 32256 mA loses accuracy. Not recommended to set higher than 20 A for 1S OTG boost operation.
+            field IDCHG_TH2 5:3 -> _ as enum IdchgTh2Percent {
+                OneHundredTwentyFivePercent: 0,
+                OneHundredFiftyPercent: 1,
+                OneHundredSeventyFivePercent: 2,
+                TwoHundredPercent: 3,
+                TwoHundredFiftyPercent: 4,
+                ThreeHundredPercent: 5,
+                ThreeHundredFiftyPercent: 6,
+                FourHundredPercent: 7,
+            },
+            /// Battery discharge current limit 2 deglitch time (minimum value).
+            field IDCHG_DEG2 7:6 -> _ as enum IdchgDeg2Time {
+                OneHundredMicroseconds: 0,
+                OnePointSixMilliseconds: 1,
+                SixMilliseconds: 2,
+                TwelveMilliseconds: 3,
+            },
+            /// VBUS_VAP PROCHOT status. Latched until read by host.
+            field STAT_VBUS_VAP 8 RO,
+            /// VBUS_VAP PROCHOT Profile enable.
+            field PP_VBUS_VAP 9,
+            /// Disable VSYS_UVP Hiccup mode. 0=hiccup enabled (charger restarts and latches off after 7 failures in 90 s). 1=hiccup disabled (direct latch-off after 2 ms deglitch).
+            field VSYS_UVP_NO_HICCUP 10,
+            /// Frequency Dither configuration. 0=disabled, 1=+/-2% Fs, 2=+/-4% Fs, 3=+/-6% Fs.
+            field EN_DITHER 12:11 -> _ as enum DitherConfig {
+                Disabled: 0,
+                OneX: 1,
+                TwoX: 2,
+                ThreeX: 3,
+            },
+            /// VSYS Under Voltage Lock Out threshold. 3-bit, range 2.4-8.0 V, LSB 800 mV. Default 2.4 V (000b). After UVP triggered, charger enters hiccup mode and latches off if restart fails 7 times in 90 s. 000=2.4 V, 001=3.2 V, 010=4.0 V, 011=4.8 V, 100=5.6 V, 101=6.4 V, 110=7.2 V, 111=8.0 V.
+            field VSYS_UVP 15:13,
+        },
+    },
+    register VMIN_ACTIVE_PROTECTION {
+        address: 0x3E,
+        reset: 0x6C,
+        fields: fieldset _ {
+            size-bytes: 2,
+        
+            /// Fast Role Swap feature enable. Not recommended to change during OTG operation (disables power stage for ~50 us at 800 kHz). HIZ mode holds higher priority; if EN_HIZ=1, EN_FRS is forced to 0.
+            field EN_FRS 0,
+            /// Enable internal VSYS_TH2 to follow VSYS_TH1 setting, neglecting VSYS_TH2 register value.
+            field EN_VSYSTH2_FOLLOW_VSYSTH1 1,
+            /// VSYS Threshold 2 to assert STAT_VSYS PROCHOT. 6-bit, fixed 5 us deglitch. Triggers when VSYS pin voltage is below threshold. Fixed DC offset 3.2 V, LSB 100 mV. 2S-4S range 3.2-9.5 V (default 5.9 V, 011011b). 1S range 3.2-3.9 V (default 3.2 V, 000000b).
+            field VSYS_TH2 7:2,
+            /// VAP mode VBUS PROCHOT trigger voltage threshold. 7-bit, fixed DC offset 3.2 V, LSB 100 mV, range 3.2-15.9 V. Default 3.2 V (0000000b).
+            field VBUS_VAP_TH 15:9,
+        },
+    },
+}

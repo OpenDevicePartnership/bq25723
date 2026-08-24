@@ -11,6 +11,18 @@ who = "matteotullo <matteotullo@microsoft.com>"
 criteria = "safe-to-deploy"
 delta = "2.9.1 -> 2.9.4"
 
+[[audits.defmt]]
+who = "Jerry Xie <jerryxie@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "1.1.0 -> 1.1.1"
+notes = "Reviewed version/dependency metadata and UI diagnostic updates. Runtime implementation is unchanged; defmt-macros is pinned from 1.1.0 to separately audited 1.1.1. No unsafe or ambient capability changes."
+
+[[audits.defmt-macros]]
+who = "Jerry Xie <jerryxie@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "1.1.0 -> 1.1.1"
+notes = "Replaced proc-macro-error2 diagnostic handling with syn::Error across proc-macro parsing and error paths. Reviewed generated-code paths and dependency changes; no unsafe code or new filesystem, network, environment, or process capabilities were introduced."
+
 [[audits.device-driver]]
 who = "Felipe Balbi <febalbi@microsoft.com>"
 criteria = "safe-to-deploy"

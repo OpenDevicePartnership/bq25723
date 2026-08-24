@@ -37,15 +37,17 @@ pub struct DeviceInterface<I2c: embedded_hal_async::i2c::I2c> {
     pub i2c: I2c,
 }
 
-impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface for DeviceInterface<I2c> {
+impl<I2c: embedded_hal_async::i2c::I2c> device_driver::RegisterInterfaceBase for DeviceInterface<I2c> {
     type Error = BQ25723Error<I2c::Error>;
     type AddressType = u8;
+}
 
+impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface for DeviceInterface<I2c> {
     async fn write_register(
         &mut self,
         address: Self::AddressType,
-        _size_bits: u32,
-        data: &[u8],
+        data: &mut [u8],
+        _metadata: &device_driver::FieldsetMetadata,
     ) -> Result<(), Self::Error> {
         debug_assert!((data.len() <= LARGEST_REG_SIZE_BYTES), "Register size too big");
 
@@ -66,8 +68,8 @@ impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface fo
     async fn read_register(
         &mut self,
         address: Self::AddressType,
-        _size_bits: u32,
         data: &mut [u8],
+        _metadata: &device_driver::FieldsetMetadata,
     ) -> Result<(), Self::Error> {
         self.i2c
             .write_read(BQ_ADDR, &[address], data)
@@ -144,15 +146,16 @@ impl<I2c: embedded_hal_async::i2c::I2c> charger::Charger for Bq25723<I2c> {
 
 #[cfg(test)]
 mod tests {
+    use super::{ChargeCurrent, ChargeOption2, ManufacturerId};
+    use device_driver::{Block, Fieldset};
     use embedded_batteries_async::charger::Charger;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
-    use field_sets::{ChargeCurrent, ChargeOption2, ManufacturerId};
 
     use super::*;
 
     #[tokio::test]
     async fn read_chip_id() {
-        let reg = ManufacturerId::new();
+        let reg = ManufacturerId::ZERO;
         let raw_reg: [u8; 1] = reg.into();
         let expectations = vec![Transaction::write_read(BQ_ADDR, vec![0x2E], vec![raw_reg[0]])];
         let i2c = Mock::new(&expectations);
@@ -160,12 +163,12 @@ mod tests {
 
         bq.manufacturer_id().read_async().await.unwrap();
 
-        bq.interface.i2c.done();
+        bq.interface().i2c.done();
     }
 
     #[tokio::test]
     async fn disable_external_ilim_pin() {
-        let mut reg = ChargeOption2::new();
+        let mut reg = ChargeOption2::ZERO;
         let raw_reg: [u8; 2] = reg.into();
         reg.set_en_extilim(false);
         let raw_reg_ilim_disabled: [u8; 2] = reg.into();
@@ -181,12 +184,12 @@ mod tests {
             .await
             .unwrap();
 
-        bq.interface.i2c.done();
+        bq.interface().i2c.done();
     }
 
     #[tokio::test]
     async fn charging_current_trait_test() {
-        let mut reg = ChargeCurrent::new();
+        let mut reg = ChargeCurrent::ZERO;
         // Set charge current to 1984mA
         reg.set_charge_current(31);
         let raw_reg_2a: [u8; 2] = reg.into();
@@ -202,6 +205,6 @@ mod tests {
         // Be sure we get 1984mA back
         assert_eq!(charge_current, 1984);
 
-        bq.device.interface.i2c.done();
+        bq.device.interface().i2c.done();
     }
 }
