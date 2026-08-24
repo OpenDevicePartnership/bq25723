@@ -31,10 +31,6 @@ criteria = "safe-to-deploy"
 version = "0.6.0"
 criteria = "safe-to-deploy"
 
-[[exemptions.defmt]]
-version = "0.3.100"
-criteria = "safe-to-deploy"
-
 [[exemptions.embedded-hal]]
 version = "1.0.0"
 criteria = "safe-to-deploy"
