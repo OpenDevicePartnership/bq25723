@@ -37,15 +37,17 @@ pub struct DeviceInterface<I2c: embedded_hal_async::i2c::I2c> {
     pub i2c: I2c,
 }
 
-impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface for DeviceInterface<I2c> {
+impl<I2c: embedded_hal_async::i2c::I2c> device_driver::RegisterInterfaceBase for DeviceInterface<I2c> {
     type Error = BQ25723Error<I2c::Error>;
     type AddressType = u8;
+}
 
+impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface for DeviceInterface<I2c> {
     async fn write_register(
         &mut self,
         address: Self::AddressType,
-        _size_bits: u32,
-        data: &[u8],
+        data: &mut [u8],
+        _metadata: &device_driver::FieldsetMetadata,
     ) -> Result<(), Self::Error> {
         debug_assert!((data.len() <= LARGEST_REG_SIZE_BYTES), "Register size too big");
 
@@ -66,8 +68,8 @@ impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface fo
     async fn read_register(
         &mut self,
         address: Self::AddressType,
-        _size_bits: u32,
         data: &mut [u8],
+        _metadata: &device_driver::FieldsetMetadata,
     ) -> Result<(), Self::Error> {
         self.i2c
             .write_read(BQ_ADDR, &[address], data)
@@ -144,6 +146,7 @@ impl<I2c: embedded_hal_async::i2c::I2c> charger::Charger for Bq25723<I2c> {
 
 #[cfg(test)]
 mod tests {
+    use device_driver::Block;
     use embedded_batteries_async::charger::Charger;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
     use field_sets::{ChargeCurrent, ChargeOption2, ManufacturerId};
@@ -160,7 +163,7 @@ mod tests {
 
         bq.manufacturer_id().read_async().await.unwrap();
 
-        bq.interface.i2c.done();
+        bq.interface().i2c.done();
     }
 
     #[tokio::test]
@@ -181,7 +184,7 @@ mod tests {
             .await
             .unwrap();
 
-        bq.interface.i2c.done();
+        bq.interface().i2c.done();
     }
 
     #[tokio::test]
@@ -202,6 +205,6 @@ mod tests {
         // Be sure we get 1984mA back
         assert_eq!(charge_current, 1984);
 
-        bq.device.interface.i2c.done();
+        bq.device.interface().i2c.done();
     }
 }
